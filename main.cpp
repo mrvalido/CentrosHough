@@ -50,7 +50,7 @@ int main();
 
 int readImage();
 int readImage32S(string nombreImagen);
-ImageValInt readImageFit(string nombreImagen);
+valarray<int> readImageFit(string nombreImagen);
 
 
 int main()
@@ -65,20 +65,33 @@ int main()
 	}
 	*/
 	string nombreImagen = "im00.fits";
-	ImageValInt imageVal = readImageFit(nombreImagen);
+	valarray<int>  imageVal = readImageFit(nombreImagen);
+
+	cout << "Bucle image.size: " << imageVal.size() << endl;
 
 	ImageValLong valorG = gradient(imageVal);
+	cout << "Umbrals: " <<  endl;
 
 	ImageValChar valorG8 = escalado8(valorG);
 
 
+	cout << "Umbrald: "  << endl;
+
 	int umbral = otsu_th(valorG8);
 
-	cout << "Umbral: " << umbral << endl;
+	cout << "Umbral: " << endl;
 
 	ImageValChar bin = binarizar(valorG8, umbral);
 
-	ImageValChar open = dilate(erode(bin));
+	ImageValInt ones = findones(bin);
+
+	cout << "Size Ones: " << ones.size() << endl;
+
+	ImageValInt random_ones = randomizer(ones, 0.5);
+
+	cout << "Size Random_Ones: " << random_ones.size() << endl;
+
+	//ImageValChar open = dilate(erode(bin));
 
 
 	cout << "Long Size: " << sizeof(unsigned long) << endl;
@@ -102,16 +115,16 @@ int main()
 
 
 
-	Mat im2(dimY, dimX, CV_8UC1, Scalar(0));  //Es un tipo de dato de 4 bytes 32S
-	//Se pone primero el eje Y y despues el eje X
-	for (long y=0; y<dimY; y++){
-		for (long x=0; x<dimX; x++){
-			im2.at<uchar>(y,x) = (uchar)(open[ind( y, x )]);
-		}
-	}
-
-	namedWindow( "Display window 2", WINDOW_NORMAL );// Create a window for display.
-	imshow( "Display window 2", im2 );
+//	Mat im2(dimY, dimX, CV_8UC1, Scalar(0));  //Es un tipo de dato de 4 bytes 32S
+//	//Se pone primero el eje Y y despues el eje X
+//	for (long y=0; y<dimY; y++){
+//		for (long x=0; x<dimX; x++){
+//			im2.at<uchar>(y,x) = (uchar)(open[ind( y, x )]);
+//		}
+//	}
+//
+//	namedWindow( "Display window 2", WINDOW_NORMAL );// Create a window for display.
+//	imshow( "Display window 2", im2 );
 
 	waitKey(0);
 	//imageVal.showImageMat();
@@ -174,7 +187,7 @@ int readImage32S(string nombreImagen){
 	// read all user-specifed, coordinate, and checksum keys in the image
 	image.readAllKeys();
 	image.read(contents);
-	//cout << image << std::endl;
+	cout << image << std::endl;
 	long ax1(image.axis(0));
 	long ax2(image.axis(1));
 
@@ -195,7 +208,7 @@ int readImage32S(string nombreImagen){
 	return 0;
 }
 
-ImageValInt readImageFit(string nombreImagen){
+valarray<int> readImageFit(string nombreImagen){
 
 	std::auto_ptr<FITS> pInfile(new FITS(nombreImagen,Read,true));
 	//std::auto_ptr<FITS> pInfile(new FITS("atestfil.fit",Read,true));
@@ -204,16 +217,19 @@ ImageValInt readImageFit(string nombreImagen){
 
 	valarray<int>  contents;
 
-	int size_val = contents.size();
-	ImageValInt imagen(size_val);
+
+
 
 	// read all user-specifed, coordinate, and checksum keys in the image
 	image.readAllKeys();
 	image.read(contents);
-
+	int size_val = contents.size();
+	valarray<int> im(size_val);
+	cout << image << std::endl;
+	cout << "Bucle contentexxxxxxxxx.size: " << contents.size() << endl;
 	for(int i = 0; i < size_val; i++){
-		imagen[i] = contents[i];
+		im[i] = contents[i];
 	}
-
-	return imagen;
+	cout << "Bucle contentexxxxxxxxxPPPPPPPPPPPPP.size: " << im.size() << endl;
+	return im;
 }

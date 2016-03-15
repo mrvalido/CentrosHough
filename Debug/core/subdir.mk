@@ -4,12 +4,15 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
+../core/hough.cpp \
 ../core/houghUtilities.cpp 
 
 OBJS += \
+./core/hough.o \
 ./core/houghUtilities.o 
 
 CPP_DEPS += \
+./core/hough.d \
 ./core/houghUtilities.d 
 
 

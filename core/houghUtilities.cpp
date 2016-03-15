@@ -48,6 +48,57 @@ ImageValChar escalado8(ImageValLong val){
 	return temp;
 }
 
+ImageValInt findones(ImageValChar val){
+	int size_val = val.size();
+	ImageValChar temp;
+	ImageValInt Y(size_val);
+	ImageValInt X(size_val);
+	int i=0;
+
+	for(int y = 0; y < dimY; y++){
+		for(int x = 0; x < dimX; x++){
+			if ( val[ind(y,x)]==MAX_BRIGHTNESS_8){
+				Y[i]=y;
+				X[i]=x;
+				i++;
+			}
+		}
+	}
+	ImageValInt coordenadas(2*i);
+
+	for(int j=0;j<i;j++){
+		coordenadas[2*j] 	= Y[j];
+		coordenadas[2*j+1]  = X[j];
+	}
+
+	return coordenadas;
+}
+
+
+ImageValInt randomizer(ImageValInt val, float random){
+
+	int size_val = val.size();
+	int n = size_val*random;           // number of elements to deal
+	srand(time(0));  					// initialize seed "randomly"
+
+	int tempX, tempY;
+	//--- Shuffle elements by randomly exchanging each with one other.
+	for (int i=0; i<(size_val/2-1); i++) {
+		int r = i + (rand() % (size_val/2-i)); // Random remaining position.
+
+		tempY = val[i*2];
+		val[i*2] = val[r*2];
+		val[r*2] = tempY;
+
+		tempX = val[i*2+1];
+		val[i*2+1] = val[r*2+1];
+		val[r*2+1] = tempX;
+	}
+
+	return val[slice(0,n,1)];
+}
+
+
 
 /*
  * Calculate gradient of image using sobel kernel
@@ -56,30 +107,28 @@ ImageValChar escalado8(ImageValLong val){
  *
  * @return image	32 bits grayscale Gradient image
  */
-ImageValLong gradient(ImageValInt im_in){
+ImageValLong gradient(valarray<int>  im_in){
 
 	int size_im = im_in.size();
 	long gx, gy;
+
 	ImageValLong temp(size_im);
 
-	int x_y_1;			//(y-1)(x-1)
-	int x_1;			//(y)(x-1)
-	int x_y_t_1;		//(y+1)(x-1)
-	int x_y_t_2;		//(y-1)(x+1)
-	int x_2;			//(y)(x+1)
-	int x_y_2;			//(y+1)(x+1)
-	int y_1;			//(y-1)(x)
-	int y_2;			//(y+1)(x)
+	unsigned int x_y_1;			//(y-1)(x-1)
+	unsigned int x_1;			//(y)(x-1)
+	unsigned int x_y_t_1;		//(y+1)(x-1)
+	unsigned int x_y_t_2;		//(y-1)(x+1)
+	unsigned int x_2;			//(y)(x+1)
+	unsigned int x_y_2;			//(y+1)(x+1)
+	unsigned int y_1;			//(y-1)(x)
+	unsigned int y_2;			//(y+1)(x)
 
-	cout << "Empieza" << endl;
+	//cout << "Empieza" << endl;
 	for(int y = 1; y < dimY - 1; y++){
-		cout << "Bucle " << y << endl;
+	//	cout << "Bucle " << y << endl;
 		for(int x = 1; x < dimX - 1; x++){
-			cout << "Bucle X: " << im_in[(y+1)*dimX+ (x-1) ] << endl;
-
-
-
-			x_y_1 = im_in[(y-1)*dimX+ (x-1) ];			//(y-1)(x-1)
+		///	cout << "Bucle xxxxx " << x << endl;
+			x_y_1 = im_in[(y-1)*dimX + (x-1) ];			//(y-1)(x-1)
 			y_1 = im_in[(y-1)*dimX+ (x) ];				//(y-1)(x)
 			x_y_t_2 = im_in[(y-1)*dimX+ (x+1) ];		//(y-1)(x+1)
 			x_1 = im_in[(y)*dimX+ (x-1) ];				//(y)(x-1)
@@ -87,13 +136,10 @@ ImageValLong gradient(ImageValInt im_in){
 			x_y_t_1 = im_in[(y+1)*dimX+ (x-1) ];		//(y+1)(x-1)
 			y_2 = im_in[(y+1)*dimX+(x) ];				//(y+1)(x)
 			x_y_2 = im_in[(y+1)*dimX+(x+1) ];			//(y+1)(x+1)
-
-			cout << "Valores recogidos" << endl;
+			//cout << "Valores recogidos" << endl;
 			gx = Sobel(x_y_1, x_1, x_y_t_1, x_y_t_2, x_2, x_y_2);
 			gy = Sobel(x_y_1, y_1, x_y_t_2, x_y_t_1, y_2, x_y_2);
-
 			temp[ind( y, x )] = (unsigned long)(gx*gx + gy*gy);
-
 		}
 	}
 	cout << "Salimos" << endl;
