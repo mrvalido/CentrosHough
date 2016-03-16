@@ -43,8 +43,8 @@ ImageValInt crear_votacion(ImageValInt val, int r2, float Xmin, float Xmax, floa
 			 if (det>0){
 				b=(y-sqrt(det));
 				if (b>Ymin && b<Ymax){
-					aa=round((a-Xmin)/paso);
-					bb=round((b-Ymin)/paso);
+					aa=(int)round((a-Xmin)/paso);
+					bb=(int)round((b-Ymin)/paso);
 					if (bb>0 && aa>0){
 						acu_ini[bb*dimensionAcumulador + aa] = acu_ini[bb*dimensionAcumulador + aa] + 1;
 					}
@@ -53,6 +53,24 @@ ImageValInt crear_votacion(ImageValInt val, int r2, float Xmin, float Xmax, floa
 		 }
 	 }
 	 return acu_ini;
+}
+
+int maximumValue(ImageValInt val)
+{
+     int length = val.size( );  // establish size of array
+     int max = val[0];       // start with max = first element
+     int Ymax,Xmax;			//Coordinates of local maximum
+
+     for(int y = 0; y < dimY; y++){
+     		for(int x = 0; x < dimX; x++){
+     			if ( val[ind(y,x)]>max){
+     				Ymax=y;
+     				Xmax=x;
+     				max = val[ind(y,x)];
+     			}
+     		}
+     	}
+     return max;                // return highest value in array
 }
 
 
