@@ -29,45 +29,20 @@
 // to use the library either add -I$(ROOT)/include/CCfits or #include <CCfits/CCfits>
 // in the compilation target.
 
-#include <CCfits/CCfits>
-#include <cmath>
-#include <opencv2/opencv.hpp>
-#include <vector>
-#include <string>
 
-//#include "ImageVal.h"
+
+#include <opencv2/opencv.hpp>
+#include <string>
+using namespace cv;
+
 #include "core/houghUtilities.h"
 
 // The library is enclosed in a namespace.
-using namespace CCfits;
-using namespace std;
-using namespace cv;
 
+int main(){
 
-
-int main();
-
-
-int readImage();
-int readImage32S(string nombreImagen);
-valarray<int> readImageFit(string nombreImagen);
-
-
-int main()
-{
-	/*
-	FITS::setVerboseMode(true);
-	try{
-		if (!readImage()) std::cerr << " readImage() \n";
-	}
-	catch (FitsException&){
-		std::cerr << " Fits Exception Thrown by test function \n";
-	}
-	*/
 	string nombreImagen = "im00.fits";
-	valarray<int>  imageVal = readImageFit(nombreImagen);
-
-	cout << "Bucle image.size: " << imageVal.size() << endl;
+	ImageValInt  imageVal = readImageFit(nombreImagen);
 
 	ImageValLong valorG = gradient(imageVal);
 
@@ -77,9 +52,9 @@ int main()
 
 	cout << "Umbral: " << umbral << endl;
 
-	ImageValChar bin = binarizar(valorG8, umbral);
+	binarizar(valorG8, umbral);
 
-	ImageValInt ones = findones(bin);
+	ImageValInt ones = findones(valorG8);
 
 	cout << "Size Ones: " << ones.size()/2 << endl;
 
@@ -88,14 +63,14 @@ int main()
 	cout << "Size Random_Ones: " << random_ones.size()/2 << endl;
 
 	ImageValFloat matrix = hough(random_ones, 963.8, 1, 1020.68, 1021.75, 450);
-/*
+
 	for(int i=0; i < matrix.size(); i+=4){
 		if(i%4==0){
 			cout << endl;
 		}
 		cout << matrix[i] << "    " << matrix[i+1] << "    "  << matrix[i+2] << "    "  << matrix[i+3] << endl;
 	}
-*/
+
 
 	cout << "Long Size: " << sizeof(unsigned long) << endl;
 	cout << "Int Size: " << sizeof(unsigned int) << endl;
@@ -108,7 +83,7 @@ int main()
 	//Se pone primero el eje Y y despues el eje X
 	for (long y=0; y<dimY; y++){
 			for (long x=0; x<dimX; x++){
-			im.at<uchar>(y,x) = (uchar)(bin[ind( y, x )]);
+			im.at<uchar>(y,x) = (uchar)(valorG8[ind( y, x )]);
 		}
 	}
 
@@ -135,104 +110,4 @@ int main()
 
 	return 0;
 }
-int readImage()
-{
-	//std::auto_ptr<FITS> pInfile(new FITS("im00.fits",Read,true));
-	std::auto_ptr<FITS> pInfile(new FITS("atestfil.fit",Read,true));
 
-	PHDU& image = pInfile->pHDU();
-
-	valarray<unsigned short>  contents;
-
-
-	// read all user-specifed, coordinate, and checksum keys in the image
-	image.readAllKeys();
-	image.read(contents);
-	cout << image << std::endl;
-	long ax1(image.axis(0));
-	long ax2(image.axis(1));
-	valarray<float>  v(contents.size());
-
-	//valarray<unsigned short> mmx(contents.max(),contents.size());
-	//v= contents/mmx;
-	float mx=(float)contents.max();
-	for (long j = 0; j < contents.size(); j++)
-	{
-		v[j]=(float) contents[j]/mx;
-	}
-
-	//     row,col  (y,x)
-	//Mat im(ax2,ax1, CV_32FC1, Scalar(0));
-	Mat im(ax2,ax1, CV_8UC1, Scalar(0));
-
-	for (long y=0; y<ax2; y++){		 //200
-		for (long x=0; x<ax1; x++){  //300
-			//im.at<float>(y,x) = (v[y*ax1+x]);
-			im.at<uchar>(y,x) = (uchar)(v[y*ax1+x]*255.0);
-		}
-	}
-
-	imshow("imagen", im);
-	waitKey(0);
-
-	return 0;
-}
-
-int readImage32S(string nombreImagen){
-
-	std::auto_ptr<FITS> pInfile(new FITS(nombreImagen,Read,true));
-	//std::auto_ptr<FITS> pInfile(new FITS("atestfil.fit",Read,true));
-
-	PHDU& image = pInfile->pHDU();
-
-	valarray<int>  contents;
-
-	// read all user-specifed, coordinate, and checksum keys in the image
-	image.readAllKeys();
-	image.read(contents);
-	cout << image << std::endl;
-	long ax1(image.axis(0));
-	long ax2(image.axis(1));
-
-
-	//     row,col  (y,x)
-	Mat im(ax2,ax1, CV_32SC1, Scalar(0));  //Es un tipo de dato de 4 bytes 32S
-
-	//Se pone primero el eje Y y despues el eje X
-	for (long y=0; y<ax2; y++){
-		for (long x=0; x<ax1; x++){
-			im.at<int>(y,x) = (int)(contents[y*ax1+x]);
-		}
-	}
-
-	imshow("imagen", im);
-	waitKey(0);
-
-	return 0;
-}
-
-valarray<int> readImageFit(string nombreImagen){
-
-	std::auto_ptr<FITS> pInfile(new FITS(nombreImagen,Read,true));
-	//std::auto_ptr<FITS> pInfile(new FITS("atestfil.fit",Read,true));
-
-	PHDU& image = pInfile->pHDU();
-
-	valarray<int>  contents;
-
-
-
-
-	// read all user-specifed, coordinate, and checksum keys in the image
-	image.readAllKeys();
-	image.read(contents);
-	int size_val = contents.size();
-	valarray<int> im(size_val);
-	cout << image << std::endl;
-	cout << "Bucle contentexxxxxxxxx.size: " << contents.size() << endl;
-	for(int i = 0; i < size_val; i++){
-		im[i] = contents[i];
-	}
-	cout << "Bucle contentexxxxxxxxxPPPPPPPPPPPPP.size: " << im.size() << endl;
-	return im;
-}

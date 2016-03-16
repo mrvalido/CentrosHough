@@ -16,7 +16,11 @@
 #include <stdio.h>
 #include <cstdlib>   // for srand and rand
 #include <ctime>     // for time
+#include <CCfits/CCfits>
 
+#include <cmath>
+
+using namespace CCfits;
 using namespace std;
 
 #define GRAYLEVEL_8 			255
@@ -34,25 +38,28 @@ typedef valarray<unsigned char>  ImageValChar;
 typedef valarray<unsigned long>  ImageValLong;
 typedef valarray<float>  		 ImageValFloat;
 
-//long xGradient(valarray<int> image, int x, int y);
-//long yGradient(valarray<int> image, int x, int y);
-long Sobel(int val1,int val2,int val3,int val4,int val5,int val6);
-ImageValLong gradient(valarray<int> im_in);
+ImageValInt readImageFit(string nombreImagen);
 
-ImageValChar escalado8(ImageValLong val);
-ImageValChar escalado8(ImageValInt val);
-ImageValInt findones(ImageValChar val);
-ImageValInt randomizer(ImageValInt val, float random);
+long Sobel(int val1,int val2,int val3,int val4,int val5,int val6);
+ImageValLong gradient(const ImageValInt& im_in);
+ImageValChar escalado8(const ImageValLong& val);
+ImageValChar escalado8(const ImageValInt& val);
+
 ImageValInt histogram (ImageValChar val);
 ImageValFloat probability (ImageValInt hist);
-int otsu_th(ImageValChar val);
-ImageValChar binarizar (ImageValChar val, int threshold);
+int otsu_th(const ImageValChar& val);
+void binarizar (ImageValChar& val, int threshold);
+ImageValInt findones(const ImageValChar& val);
+ImageValInt randomizer(ImageValInt& val, float random);
+
+
 ImageValChar dilate(ImageValChar val);
 ImageValChar erode(ImageValChar val);
 
 
 
-ImageValFloat hough(ImageValInt val, float radio, float paso, float yc, float xc, int despla_max);
+
+ImageValFloat hough(ImageValInt& val, float radio, float paso, float yc, float xc, int despla_max);
 ImageValInt crear_votacion(ImageValInt& val, int r2, int dimensionAcumulador, float Xmin, float Xmax, float Ymin, float Ymax, float paso);
 float* maximumValue(ImageValInt& val, int dimensionAcumulador);
 float* kernel(ImageValInt& val, int y, int x, int dimensionAcumulador);

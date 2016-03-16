@@ -7,7 +7,7 @@ using namespace cv;
  *
  */
 
-ImageValFloat hough(ImageValInt val, float radio, float paso, float yc, float xc, int despla_max){
+ImageValFloat hough(ImageValInt& val, float radio, float paso, float yc, float xc, int despla_max){
 	 float Rmin=radio-ANCHO/2;
 	 float Rmax=radio+ANCHO/2;
 
@@ -21,16 +21,13 @@ ImageValFloat hough(ImageValInt val, float radio, float paso, float yc, float xc
 
 	 ImageValFloat matrix(lmax*4);
 
-	 cout << "Lmax: " << lmax << "\t" << Xmax << "\t" << Ymax << "\t" << dimensionAcumulador <<  endl;
 	 int count = 0;
 	 for (float r=Rmin; r < Rmax; r+=PASO_RADIO){					// Para un rango de radios realiza
 
 		 ImageValInt votacion = crear_votacion(val, r*r, dimensionAcumulador, Xmin, Xmax, Ymin, Ymax, paso);
 
-
-		 cout << "Maximo Metodo: " << votacion.max() << endl << endl;
 		 float *max = maximumValue(votacion, dimensionAcumulador);
-		 cout << "Maximo: " << max[0] << "\t" << max[1] << "\t" << max[2] <<  endl;
+		 //cout << "Maximo: " << max[0] << "\t" << max[1] << "\t" << max[2] <<  endl;
 
 		 matrix[count] = max[2];							//Valor
 		 matrix[count+1] = (float)(max[0])*paso + Ymin;		//Y
@@ -96,7 +93,6 @@ float* maximumValue(ImageValInt& val, int dimensionAcumulador)
      for(int j = -20; j < 20; j++){
 		for(int i = -20; i < 20; i++){
 			ker = kernel(val, (max_ant[0]+j), (max_ant[1]+i), dimensionAcumulador);
-			cout << "Y: " << j << "\tX:" << i <<  endl;
 			if ( ker[2] > max[2]){
 				max[0] = ker[0];						// Coordenada Y
 				max[1] = ker[1];						// Coordenada X
