@@ -48,6 +48,19 @@ ImageValChar escalado8(ImageValLong val){
 	return temp;
 }
 
+ImageValChar escalado8(ImageValInt val){
+	int size_val = val.size();
+	ImageValChar temp(size_val);
+
+	unsigned int mx = val.max();
+
+	for(int i = 0; i < size_val; i++){
+		temp[i] = (unsigned char) (( (float)(val[i])/(float)mx ) * 255.0);
+	}
+
+	return temp;
+}
+
 ImageValInt findones(ImageValChar val){
 	int size_val = val.size();
 	ImageValChar temp;
@@ -79,7 +92,7 @@ ImageValInt randomizer(ImageValInt val, float random){
 
 	int size_val = val.size();
 	int n = size_val*random;           // number of elements to deal
-	srand(time(0));  					// initialize seed "randomly"
+	srand(SEMILLA);//srand(time(0));  					// initialize seed "randomly"
 
 	int tempX, tempY;
 	//--- Shuffle elements by randomly exchanging each with one other.
@@ -148,7 +161,7 @@ ImageValLong gradient(valarray<int>  im_in){
 }
 
 
-valarray<unsigned int> histogram (ImageValChar val){
+ImageValInt histogram (ImageValChar val){
 	valarray<unsigned int> hist(GRAYLEVEL_8);
 
 	int size_val = val.size();
@@ -160,7 +173,7 @@ valarray<unsigned int> histogram (ImageValChar val){
 	return hist;
 }
 
-valarray<float> probability (valarray<unsigned int> hist){
+ImageValFloat probability (valarray<unsigned int> hist){
 	valarray<float> prob(GRAYLEVEL_8);
 
 	int numeroPixels = dimX*dimY;

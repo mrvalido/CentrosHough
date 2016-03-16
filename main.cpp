@@ -70,29 +70,32 @@ int main()
 	cout << "Bucle image.size: " << imageVal.size() << endl;
 
 	ImageValLong valorG = gradient(imageVal);
-	cout << "Umbrals: " <<  endl;
 
 	ImageValChar valorG8 = escalado8(valorG);
 
-
-	cout << "Umbrald: "  << endl;
-
 	int umbral = otsu_th(valorG8);
 
-	cout << "Umbral: " << endl;
+	cout << "Umbral: " << umbral << endl;
 
 	ImageValChar bin = binarizar(valorG8, umbral);
 
 	ImageValInt ones = findones(bin);
 
-	cout << "Size Ones: " << ones.size() << endl;
+	cout << "Size Ones: " << ones.size()/2 << endl;
 
 	ImageValInt random_ones = randomizer(ones, 0.5);
 
-	cout << "Size Random_Ones: " << random_ones.size() << endl;
+	cout << "Size Random_Ones: " << random_ones.size()/2 << endl;
 
-	//ImageValChar open = dilate(erode(bin));
-
+	ImageValFloat matrix = hough(random_ones, 963.8, 1, 1020.68, 1021.75, 450);
+/*
+	for(int i=0; i < matrix.size(); i+=4){
+		if(i%4==0){
+			cout << endl;
+		}
+		cout << matrix[i] << "    " << matrix[i+1] << "    "  << matrix[i+2] << "    "  << matrix[i+3] << endl;
+	}
+*/
 
 	cout << "Long Size: " << sizeof(unsigned long) << endl;
 	cout << "Int Size: " << sizeof(unsigned int) << endl;
