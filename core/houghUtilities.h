@@ -53,8 +53,8 @@ ImageValChar erode(ImageValChar val);
 
 
 ImageValFloat hough(ImageValInt val, float radio, float paso, float yc, float xc, int despla_max);
-ImageValInt crear_votacion(ImageValInt val, int r2, int dimensionAcumulador, float Xmin, float Xmax, float Ymin, float Ymax, float paso);
-int* maximumValue(ImageValInt val, int dimensionAcumulador);
-float* centroide(ImageValInt val, int dimensionAcumulador);
+ImageValInt crear_votacion(ImageValInt& val, int r2, int dimensionAcumulador, float Xmin, float Xmax, float Ymin, float Ymax, float paso);
+float* maximumValue(ImageValInt& val, int dimensionAcumulador);
+float* kernel(ImageValInt& val, int y, int x, int dimensionAcumulador);
 
 #endif /* CORE_HOUGHUTILITIES_H_ */
