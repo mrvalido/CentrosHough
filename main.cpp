@@ -41,7 +41,57 @@ using namespace cv;
 
 int main(){
 
-	string nombreImagen = "im00.fits";
+	string nombreImagen;
+	char imageName[] = "./im/im0X.fits";
+	vector <ImageValInt> datacube;
+
+
+
+	ImageValChar tmp (dimX*dimY);
+	// Leer imagenes desde fichero, guardandolas en el vector de datos
+	for(unsigned int i = 0; i < 9; i++) {
+
+		imageName[8] = 48 + i;
+		nombreImagen = imageName;
+
+
+		datacube.push_back(readImageFit(nombreImagen));
+
+		//getImages(datacube[i], tmp, IMIN, IMAX, i);
+
+		cout << "name image  "<< i << nombreImagen << endl;
+
+		ImageValLong valorG = gradient(datacube[i]);
+
+		ImageValChar valorG8 = escalado8(valorG);
+
+		int umbral = otsu_th(valorG8);
+
+		cout << "Umbral: " << umbral << endl;
+
+		binarizar(valorG8, umbral);
+
+		ImageValInt ones = findones(valorG8);
+
+		cout << "Size Ones: " << ones.size()/2 << endl;
+
+		ImageValInt random_ones = randomizer(ones, 0.125);
+
+		cout << "Size Random_Ones: " << random_ones.size()/2 << endl;
+
+		ImageValFloat matrix = hough(random_ones, 963.8, 1, 1020.68, 1021.75, 450);
+
+		for(int i=0; i < matrix.size(); i+=4){
+			if(i%4==0){
+				cout << endl;
+			}
+			cout << matrix[i] << "    " << matrix[i+1] << "    "  << matrix[i+2] << "    "  << matrix[i+3] << endl;
+		}
+
+
+	}
+	waitKey(0);
+	nombreImagen = "im00.fits";
 	ImageValInt  imageVal = readImageFit(nombreImagen);
 
 	ImageValLong valorG = gradient(imageVal);
