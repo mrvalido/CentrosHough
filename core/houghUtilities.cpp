@@ -5,8 +5,10 @@
  *      Author: mrv
  */
 
-
+#define ind( y, x ) ( y*dimX+x )
+#include <opencv2/opencv.hpp>
 #include "houghUtilities.h"
+using namespace cv;
 
 
 ImageValInt readImageFit(string nombreImagen){
@@ -39,6 +41,89 @@ ImageValInt readImageFit(string nombreImagen){
 }
 }*/
 
+//// Computes the x component of the gradient vector
+//// at a given point in a image.
+//// returns gradient in the x direction
+double xGradient(const valarray<double>& image, int x, int y){
+   return (image[ind(y-1, x-1)] +2*image[ind(y, x-1)] +image[ind(y+1, x-1)] -image[ind(y-1, x+1) ]- 2*image[ind(y, x+1)] -image[ind(y+1, x+1)]);
+}
+//
+
+//// Computes the y component of the gradient vector
+//// at a given point in a image
+//// returns gradient in the y direction
+//
+double yGradient(const valarray<double>& image, int x, int y)
+{
+
+	return (image[ind(y-1, x-1)] +
+                2*image[ind(y-1, x)] +
+                image[ind(y-1, x+1) ]-
+                  image[ind(y+1, x-1)] -
+                   2*image[ind(y+1, x)] -
+                    image[ind(y+1, x+1)]);
+}
+
+
+      // define the kernel
+
+//      // define the kernel
+//            float Kernel[3][3] = {
+//                                  {1/9.0, 1/9.0, 1/9.0},
+//                                  {1/9.0, 1/9.0, 1/9.0},
+//                                  {1/9.0, 1/9.0, 1/9.0}
+//                                 };
+//
+
+
+valarray<double> gradient(const valarray<double>& src ){
+	//
+	double sum;
+	double gx,gy;
+	valarray<double> tmp(0.0,src.size());
+
+	for(int y = 1; y < dimY - 1; y++){
+		for(int x = 1; x < dimX - 1; x++){
+			gy = yGradient(src, x, y);
+			gx = xGradient(src, x, y);
+			sum= (gx*gx+gy*gy);
+			//sum = abs(gx) + abs(gy);
+			//			sum = sum > 255 ? 255:sum;
+			//			sum = sum < 0 ? 0 : sum;
+			tmp[ind(y,x)] = sum;
+		}
+	}
+	return tmp;
+}
+
+
+valarray<double> median_filter(const ImageValInt& val, float Kernel[3][3]){
+
+	ImageValDouble tmp(0.0,val.size());
+	cout << "max y Min"<< val.max()<<"  "<<val.min()<<endl;
+	 double sum;
+	 //convolution operation
+	 for(int y = 1; y < dimY - 1; y++) {
+		 for(int x = 1; x < dimX - 1; x++) {
+			 sum = 0.0;
+			 //
+			 for(int k = -1; k <= 1;k++) {
+				 for(int j = -1; j <=1; j++) {
+
+					// cout<< "k= "<<k<<" j="<<j<<"  y-j="<<y-j<<" x-k="<<x-k<<endl;
+					 sum = sum + Kernel[j+1][k+1]*(float)val[ind(int(y - j), int(x - k))];
+
+//					cout <<"Kernel= "<<Kernel[j+1][k+1] <<"   ind="<<ind(int(y - j), int(x - k))<<endl;
+
+				 }
+			 }
+//waitKey(1000);
+			 tmp[ind(y,x)] = sum;
+		 }
+	 }
+	 return tmp;
+}
+
 long Sobel(int val1,int val2,int val3,int val4,int val5,int val6){
 	return (long)(val1 + 2*val2 + val3 -val4 - 2*val5 - val6);
 }
@@ -50,6 +135,8 @@ long Sobel(int val1,int val2,int val3,int val4,int val5,int val6){
  *
  * @return image	32 bits grayscale Gradient image
  */
+
+
 ImageValLong gradient(const ImageValInt& im_in){
 
 	int size_im = im_in.size();
@@ -79,12 +166,43 @@ ImageValLong gradient(const ImageValInt& im_in){
 
 			gx = Sobel(x_y_1, x_1, x_y_t_1, x_y_t_2, x_2, x_y_2);
 			gy = Sobel(x_y_1, y_1, x_y_t_2, x_y_t_1, y_2, x_y_2);
-			temp[ind( y, x )] = (unsigned long)(gx*gx + gy*gy);
+			temp[ind( y, x )] = (unsigned long)(gx*gx + gy*gy);//gradient aproximate
+			//temp[ind( y, x )] = sqrt((gx*gx + gy*gy));//gradient aproximate
+			//temp[ind( y, x )] = (unsigned long)(abs(gx) + abs(gy));//gradient aproximate
 		}
 	}
 
 	return temp;
 }
+/**
+ * Recibimos una imagen en 8 bits y le aplicamos la dilatacion de bordes
+ *
+ * @param image		Imagen a la cual aplicaremos el Dilate
+ * @return image 	Imagen una vez aplicado el filtro
+ */
+ImageValChar escalado8(const ImageValDouble& val){
+	int size_val = val.size();
+	ImageValChar temp(size_val);
+    ImageValDouble tmp=val;
+	double mx ;
+	double min=tmp.min();
+	tmp=tmp-min;
+	mx=tmp.max();
+	tmp=tmp/mx;
+	//cout << "Maximo: " << mx << "          Minimo: " << min << endl;
+
+	for(int i = 0; i < size_val; i++){
+		temp[i] = (unsigned char) ( tmp[i] * 255.0);
+	}
+
+	return temp;
+}
+/**
+ * Recibimos una imagen en 8 bits y le aplicamos la dilatacion de bordes
+ *
+ * @param image		Imagen a la cual aplicaremos el Dilate
+ * @return image 	Imagen una vez aplicado el filtro
+ */
 
 ImageValChar escalado8(const ImageValLong& val){
 	int size_val = val.size();
@@ -98,6 +216,12 @@ ImageValChar escalado8(const ImageValLong& val){
 
 	return temp;
 }
+/**
+ * Recibimos una imagen en 8 bits y le aplicamos la dilatacion de bordes
+ *
+ * @param image		Imagen a la cual aplicaremos el Dilate
+ * @return image 	Imagen una vez aplicado el filtro
+ */
 
 ImageValChar escalado8(const ImageValInt& val){
 	int size_val = val.size();
@@ -111,6 +235,12 @@ ImageValChar escalado8(const ImageValInt& val){
 
 	return temp;
 }
+/**
+ * Caculate eigh bit image histogram
+ *
+ * @param val		input image
+ * @return hist 	histogram of input image
+ */
 
 ImageValInt histogram (ImageValChar val){
 	valarray<unsigned int> hist(GRAYLEVEL_8);
@@ -123,10 +253,14 @@ ImageValInt histogram (ImageValChar val){
 
 	return hist;
 }
-
+/**
+ * Calculate probability vector from image histogram
+ *
+ * @param val		input histogram vector
+ * @return hist 	probability vector
+ */
 ImageValFloat probability (valarray<unsigned int> hist){
 	valarray<float> prob(GRAYLEVEL_8);
-
 	int numeroPixels = dimX*dimY;
 	for (int x = 0; x < GRAYLEVEL_8; x++) {
 		prob[x] = (float)hist[x]/(float)numeroPixels;
@@ -136,10 +270,11 @@ ImageValFloat probability (valarray<unsigned int> hist){
 //--------------------------------------------------------------------------------------------------------------------
 
 /**
- *  Permite obtener el valor del umbral para realizar la binarizacion
+ *  This function calculates automatically the optimum threshold.
+ *  This threshold will be used to binarized the gradient
  *
- *  @param val		Imagen a la cual le calcularemos el umbral
- *  @return int 	Devolvemos el valor del umbral calculado
+ *  @param val		8 bit input Image
+ *  @return int 	Otsu threshold
  */
 int otsu_th(const ImageValChar& val){
 	valarray<unsigned int> hist(GRAYLEVEL_8);
@@ -184,11 +319,12 @@ int otsu_th(const ImageValChar& val){
 }
 
 /**
- *  Dada una imagen de entrada la binarizamos en blanco y negro
+ *  this fuction create a two level image Dada una imagen de entrada la binarizamos en blanco y negro
  *
- *  @param val Imagen de entrada a binarizar
+ *  @param val 			8 bit gray level input /output
+ *  @param threshold  	input threshold
  *
- *  @return valarray<unsigned char> Devolvemos el resultado de la imagen binarizada
+ *  @return val 		valarray<unsigned char> binary image
  */
 void binarizar (ImageValChar& val, int threshold){
 	int size_val = val.size();
@@ -203,6 +339,13 @@ void binarizar (ImageValChar& val, int threshold){
 	}
 }
 //--------------------------------------------------------------------------------------------------------------------
+
+/**
+ * Recibimos una imagen en 8 bits y le aplicamos la dilatacion de bordes
+ *
+ * @param image		Imagen a la cual aplicaremos el Dilate
+ * @return image 	Imagen una vez aplicado el filtro
+ */
 
 ImageValInt findones(const ImageValChar& val){
 	int size_val = val.size();
@@ -230,6 +373,13 @@ ImageValInt findones(const ImageValChar& val){
 	return coordenadas;
 }
 
+/**
+ * Recibimos una imagen en 8 bits y le aplicamos la dilatacion de bordes
+ *
+ * @param image		Imagen a la cual aplicaremos el Dilate
+ * @return image 	Imagen una vez aplicado el filtro
+ */
+
 ImageValInt randomizer(ImageValInt& val, float random){
 
 	int size_val = val.size();
@@ -255,65 +405,4 @@ ImageValInt randomizer(ImageValInt& val, float random){
 
 
 //--------------------------------------------------------------------------------------------------------------------
-
-
-/*
- * Recibimos una imagen en 8 bits y le aplicamos la dilatacion de bordes
- *
- * @param image		Imagen a la cual aplicaremos el Dilate
- * @return image 	Imagen una vez aplicado el filtro
- */
-
-ImageValChar dilate(ImageValChar val){
-
-	ImageValChar dila = val;
-
-	for (int y=1; y < dimY-1; y++){
-		for (int x=1; x < dimX-1; x++){
-			if (dila[ind( y, x )] == MAX_BRIGHTNESS_8){
-				if (dila[ind( y-1, x )]==0) 			dila[ind( y-1, x )] = 2;		//Vecino de la izq
-				if (dila[ind( y, x-1 )]==0) 			dila[ind( y, x-1 )] = 2;		//Vecino de arriba
-				if (dila[ind( y+1, x )]==0) 	 		dila[ind( y+1, x )] = 2;		//Vecino de la derecha
-				if (dila[ind( y, x+1 )]==0)				dila[ind( y, x+1 )] = 2;		//Vecino de abajo
-			}
-		}
-	}
-
-	int size_val = val.size();
-	for(int i = 0; i < size_val; i++){
-		if (dila[i] == 2){
-			dila[i] = MAX_BRIGHTNESS_8;
-		}
-	}
-
-	return dila;
-}
-//--------------------------------------------------------------------------------------------------------------------
-
-ImageValChar erode(ImageValChar val){
-
-	ImageValChar ero = val;
-
-	for (int y=1; y < dimY-1; y++){
-		for (int x=1; x < dimX-1; x++){
-			if (ero[ind( y, x )] == 0){
-				if (ero[ind( y-1, x )]==MAX_BRIGHTNESS_8) 			ero[ind( y-1, x )] = 2;		//Vecino de la izq
-				if (ero[ind( y, x-1 )]==MAX_BRIGHTNESS_8) 			ero[ind( y, x-1 )] = 2;		//Vecino de arriba
-				if (ero[ind( y+1, x )]==MAX_BRIGHTNESS_8) 	 		ero[ind( y+1, x )] = 2;		//Vecino de la derecha
-				if (ero[ind( y, x+1 )]==MAX_BRIGHTNESS_8)			ero[ind( y, x+1 )] = 2;		//Vecino de abajo
-			}
-		}
-	}
-
-	int size_val = val.size();
-	for(int i = 0; i < size_val; i++){
-		if (ero[i] == 2){
-			ero[i] = 0;
-		}
-	}
-
-	return ero;
-}
-//--------------------------------------------------------------------------------------------------------------------
-
 

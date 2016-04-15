@@ -1,19 +1,23 @@
 #include "houghUtilities.h"
 #include <opencv2/opencv.hpp>
 using namespace cv;
-
 /**
- * Funcion hough
- *
+ *  Hough Fucntion caculate initial parameter to do hough transform. This preprocessing steps reduce the complexity of computation
+ *  Calculamos el valor del radio de la circunferencia presente en la imagen asi como su posicion en la misma
+ *	@param val		Coordinates of Solar limb
+ *  @param radio 	initial Radio
+ *  @param paso 	incremental step to coordinates search Imagen binarizada con el borde calculado, a calcular su radio
+ *  @param yc  	     Initial yc center coordinate
+ *	@param xc  	     Initial xc center coordinate
+ *  @return Matrix  a set of centers coordinates, size of matrix depending of search range of radio
  */
-
 ImageValFloat hough(ImageValInt& val, float radio, float paso, float yc, float xc, int despla_max){
 	 float Rmin=radio-ANCHO/2;
 	 float Rmax=radio+ANCHO/2;
 
-	 float Xmin=xc-despla_max; 	// Xmin and Xmax are boundaries of coordinates of initial center
+	 float Xmin=xc-despla_max; 	// Xmin and Xmax are boundaries of coordinates around of initial center
 	 float Xmax=xc+despla_max;
-	 float Ymin=yc-despla_max;	// Ymin and Ymax are boundaries of coordinates of initial center
+	 float Ymin=yc-despla_max;	// Ymin and Ymax are boundaries of coordinates around of initial center
 	 float Ymax=yc+despla_max;
 
 	 float lmax=(Rmax-Rmin)/PASO_RADIO+1;
@@ -22,9 +26,9 @@ ImageValFloat hough(ImageValInt& val, float radio, float paso, float yc, float x
 	 ImageValFloat matrix(lmax*4);
 
 	 int count = 0;
-	 for (float r=Rmin; r < Rmax; r+=PASO_RADIO){					// Para un rango de radios realiza
+	 for (float r=Rmin; r < Rmax; r+=PASO_RADIO){					// do_hough transform for each radio value belong to range
 
-		 ImageValInt votacion = crear_votacion(val, r*r, dimensionAcumulador, Xmin, Xmax, Ymin, Ymax, paso);
+		 ImageValInt votacion = do_hough(val, r*r, dimensionAcumulador, Xmin, Xmax, Ymin, Ymax, paso);
 
 		 float *max = maximumValue(votacion, dimensionAcumulador);
 		 //cout << "Maximo: " << max[0] << "\t" << max[1] << "\t" << max[2] <<  endl;
@@ -38,7 +42,18 @@ ImageValFloat hough(ImageValInt& val, float radio, float paso, float yc, float x
 	 return matrix;
  }
 
-ImageValInt crear_votacion(ImageValInt& val, int r2, int dimensionAcumulador, float Xmin, float Xmax, float Ymin, float Ymax, float paso){
+/**
+ *  do_Hough Function calculate hough transform.
+ *
+ *	@param val		Coordinates of Solar limb
+ *  @param r2 	    r^2 Radio
+ *  @param Xmin, Xmax X coordinate range for algorithm searching
+ *  @param Ymin, Ymax Y coordinate range for algorithm searching
+ *  @param paso 	incremental step to coordinates search Image
+ *  @param dimensionAcumulador  	     Hough Space dimensions
+ *  @return Hough space
+ */
+ImageValInt do_hough(ImageValInt& val, int r2, int dimensionAcumulador, float Xmin, float Xmax, float Ymin, float Ymax, float paso){
 	 int size_val = val.size();
 	 ImageValInt acu_ini(dimensionAcumulador*dimensionAcumulador);
 
@@ -47,10 +62,10 @@ ImageValInt crear_votacion(ImageValInt& val, int r2, int dimensionAcumulador, fl
 	 float b;
 	 int bb, aa;
 	 for(int k=0; k < size_val/2; k++){
-		 //Extraemos las coordenadas del punto
+		 //we get y and x coordinates from input val
 		 y = val[2*k];
 		 x = val[2*k+1];
-
+//do votation in Hough space
 		 for(float a = Xmin; a < Xmax; a+=paso){		// a es la coordenada del centro X xc
 			 det=r2-(x-a)*(x-a);
 
@@ -69,6 +84,14 @@ ImageValInt crear_votacion(ImageValInt& val, int r2, int dimensionAcumulador, fl
 	 return acu_ini;
 }
 
+
+/**
+ *  find maximun value in hough space
+ *	@param val		hough space (dimentions is dimensionAcumuladorxdimensionAcumulador)
+ *  @param dimensionAcumulador 	    it is side dimetion of hough space
+ *
+ *  @return  a pointer to vector (max) of 3 components y and x coordinates and value of maximum
+ */
 float* maximumValue(ImageValInt& val, int dimensionAcumulador)
 {
      static float array [3]= {0,0,0};
@@ -79,7 +102,7 @@ float* maximumValue(ImageValInt& val, int dimensionAcumulador)
      static int array_ant [3]= {0,0,0};
      int *max_ant = array_ant;
      max_ant[2] = val[0];
-
+//
      for(int y = 0; y < dimensionAcumulador; y++){
 		for(int x = 0; x < dimensionAcumulador; x++){
 			if ( val[y*dimensionAcumulador + x]>max_ant[2]){
@@ -89,6 +112,7 @@ float* maximumValue(ImageValInt& val, int dimensionAcumulador)
 			}
 		}
 	 }
+
 
      for(int j = -20; j < 20; j++){
 		for(int i = -20; i < 20; i++){
@@ -104,21 +128,23 @@ float* maximumValue(ImageValInt& val, int dimensionAcumulador)
      return max;                // return max
 }
 
-
+/**
+ *  Kerner function find find maximun value in hough space
+ *	@param val		hough space (dimentions is dimensionAcumuladorxdimensionAcumulador)
+ *  @param dimensionAcumulador 	    it is side dimetion of hough space
+ *
+ *  @return  a pointer to vector (max) of 3 components y and x coordinates and value of maximum
+ */
 float* kernel(ImageValInt& val, int y, int x, int dimensionAcumulador){
 	static float array [3]= {0,0,0};
 	float *max = array;
-	//max[2] = ((float)(val[(y-1)*dimensionAcumulador+(x-1)]) + (float)(val[(y-1)*dimensionAcumulador+(x)]) + (float)(val[(y-1)*dimensionAcumulador+(x+1)])
-	//		+ (float)(val[(y)*dimensionAcumulador+(x-1)])+ (float)(val[(y)*dimensionAcumulador+(x)]) + (float)(val[(y)*dimensionAcumulador+(x+1)])
-	//		+ (float)(val[(y+1)*dimensionAcumulador+(x-1)]) + (float)(val[(y+1)*dimensionAcumulador+(x)]) + (float)(val[(y+1)*dimensionAcumulador+(x+1)]))/9.0;
-
 	int pos;
 	float sumatorio = 0;
 	float sum_x = 0.0;
 	float sum_y = 0.0;
 	for(int j = -1; j < 2; j++){
 		for(int i = -1; i < 2; i++){
-			pos = val[(y+j)*dimensionAcumulador + (x+i)];
+			pos = val[(y+j)*dimensionAcumulador + (x+i)];//vote value is the weigh this is used to determine y and x coordinates
 			sumatorio += pos;
 			sum_x += (x+i)*pos;
 			sum_y += (y+j)*pos;
@@ -127,110 +153,9 @@ float* kernel(ImageValInt& val, int y, int x, int dimensionAcumulador){
 
 	max[0] = sum_y/sumatorio;
 	max[1] = sum_x/sumatorio;
-	max[2] = sumatorio/9;
+	max[2] = round(sumatorio/9);
 
 	return max;
 }
-
-
-
-
-/*
- *
- * int* maximumValue(ImageValInt val, int dimensionAcumulador)
-{
-     static int array [3]= {0,0,0};
-     int *max = array;
-     max[2] = val[0];
-
-     for(int y = 1; y < dimensionAcumulador; y++){
-		for(int x = 1; x < dimensionAcumulador; x++){
-			if ( val[y*dimensionAcumulador + x]>max[2]){
-				max[0]=y;						// Coordenada Y
-				max[1]=x;						// Coordenada X
-				max[2] = val[y*dimensionAcumulador + x];			// Valor maximo de acu_ini
-			}
-		}
-	 }
-
-     return max;                // return max
-}
-
-float* centroide(ImageValInt val, int dimensionAcumulador){
-	static float array [2]= {0,0};
-	float *centros = array;
-
-	float sum_x =0;
-	float sum_y =0;
-	int num_pixeles=0;
-
-
-	for(int y = 0; y < 3; y++){
-		for(int x = 0; x < 3; x++){
-			if(val[y*3 + x] != 0){
-				num_pixeles++;
-				sum_x = sum_x + x;
-	            sum_y = sum_y + y;
-			}
-		}
-	}
-
-	centros[0] = sum_y/num_pixeles;
-	centros[1] = sum_x/num_pixeles;
-
-	return centros;
-}
- *
- */
-
-
-
-
-
-/*
- *
- *
- * [filas,columnas] = size(B);
-
-sum_i =0;
-sum_j =0;
-num_pixeles=0;
-
-
-for(int y = 0; y < dimensionAcumulador; y++){
-	for(int x = 0; x < dimensionAcumulador; x++){
-		if(val[y*dimensionAcumulador + x] != 0){
-			num_pixeles++;
-			sum_x = sum_x + x;
-            sum_y = sum_y + y;
-		}
-	}
-}
-
-cx = sum_x/num_pixeles;
-cy = sum_y/num_pixeles;
-
-for i = 1:filas
-    for j = 1: columnas
-        if (B(i,j)~=0)
-            num_pixeles= num_pixeles + 1;
-            sum_i = sum_i + i;
-            sum_j = sum_j + j;
-        end
-    end
-end
-
-%coord.del centroide en (filas, columnas)
-ci = sum_i/num_pixeles;
-cj = sum_j/num_pixeles;
-centro = [ci, cj];
- */
-
-
-
-
-
-
-
 
 

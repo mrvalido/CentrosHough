@@ -17,6 +17,7 @@
 #include <cstdlib>   // for srand and rand
 #include <ctime>     // for time
 #include <CCfits/CCfits>
+#include <vector>
 
 #include <cmath>
 
@@ -27,8 +28,8 @@ using namespace std;
 #define MAX_BRIGHTNESS_8 		255
 #define dimX					2048
 #define dimY					2048
-#define ind( y, x ) ( y*dimX+x )
-#define SEMILLA 				20
+#define ind( y, x ) ( y*dimX+x ) //macro to transform image coordinates to image index position
+#define SEMILLA 				20 //Rando seed to get a subset of solar limb coordinates from total
 #define ANCHO					4			//grosor en pixeles de aro entoro al 1% de radio del disco
 #define PASO_RADIO				0.25		//Incremento del radio
 
@@ -37,13 +38,27 @@ typedef valarray<unsigned int>   ImageValInt;
 typedef valarray<unsigned char>  ImageValChar;
 typedef valarray<unsigned long>  ImageValLong;
 typedef valarray<float>  		 ImageValFloat;
+typedef valarray<double>  		 ImageValDouble;
 
 ImageValInt readImageFit(string nombreImagen);
 
+valarray<double> median_filter(const ImageValInt& val, float Kernel[3][3]);
+
+
+double xGradient(const valarray<double>& image, int x, int y);
+double yGradient(const valarray<double>& image, int x, int y);
+valarray<double> gradient(const valarray<double>& src );
+
 long Sobel(int val1,int val2,int val3,int val4,int val5,int val6);
+//ImageValLong gradient(const ImageValInt& im_in);
+
+
+
 ImageValLong gradient(const ImageValInt& im_in);
+
 ImageValChar escalado8(const ImageValLong& val);
 ImageValChar escalado8(const ImageValInt& val);
+ImageValChar escalado8(const ImageValDouble& val);
 
 ImageValInt histogram (ImageValChar val);
 ImageValFloat probability (ImageValInt hist);
@@ -53,14 +68,12 @@ ImageValInt findones(const ImageValChar& val);
 ImageValInt randomizer(ImageValInt& val, float random);
 
 
-ImageValChar dilate(ImageValChar val);
-ImageValChar erode(ImageValChar val);
 
 
 
 
 ImageValFloat hough(ImageValInt& val, float radio, float paso, float yc, float xc, int despla_max);
-ImageValInt crear_votacion(ImageValInt& val, int r2, int dimensionAcumulador, float Xmin, float Xmax, float Ymin, float Ymax, float paso);
+ImageValInt do_hough(ImageValInt& val, int r2, int dimensionAcumulador, float Xmin, float Xmax, float Ymin, float Ymax, float paso);
 float* maximumValue(ImageValInt& val, int dimensionAcumulador);
 float* kernel(ImageValInt& val, int y, int x, int dimensionAcumulador);
 
