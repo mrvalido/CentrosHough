@@ -29,9 +29,10 @@ using namespace std;
 #define dimX					2048
 #define dimY					2048
 #define ind( y, x ) ( y*dimX+x ) //macro to transform image coordinates to image index position
-#define SEMILLA 				20 //Rando seed to get a subset of solar limb coordinates from total
-#define ANCHO					4			//grosor en pixeles de aro entoro al 1% de radio del disco
+#define SEMILLA 				25 //Rando seed to get a subset of solar limb coordinates from total
+#define ANCHO					5			//grosor en pixeles de aro entoro al 1% de radio del disco
 #define PASO_RADIO				0.25		//Incremento del radio
+#define PASO 					1
 
 
 typedef valarray<unsigned int>   ImageValInt;
@@ -77,4 +78,7 @@ ImageValInt do_hough(ImageValInt& val, int r2, int dimensionAcumulador, float Xm
 float* maximumValue(ImageValInt& val, int dimensionAcumulador);
 float* kernel(ImageValInt& val, int y, int x, int dimensionAcumulador);
 
+ImageValInt rot90(ImageValInt& i_image,int rows, int cols);
+//template <typename Tt>
+//void write_im(Tt& val,int Dy,int Dx, int indice);
 #endif /* CORE_HOUGHUTILITIES_H_ */

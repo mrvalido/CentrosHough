@@ -404,5 +404,48 @@ ImageValInt randomizer(ImageValInt& val, float random){
 }
 
 
+
+ImageValInt rot90(ImageValInt& i_image,int rows, int cols){
+
+     /*******************************************
+     *
+     *   Rotate the image array as desired.
+     *
+     *******************************************/
+
+     /*******************************************
+     *
+     *   1 90 degree rotation
+     *
+     *******************************************/
+	int size_im = i_image.size();
+	ImageValInt tmp(size_im);
+
+      for(int i=0; i<rows; i++){
+         for(int j=0; j<cols; j++){
+            //out_image[j][cols-1-i] = the_image[i][j];
+         tmp[ind(j,cols-1-i)] = i_image[ind(i,j)];
+      }  /* ends loop over i */
+   }
+      return tmp;
+}
 //--------------------------------------------------------------------------------------------------------------------
 
+//template <typename Tt>
+//void write_im(Tt& val,int Dy,int Dx, int indice){
+//
+//	Mat im(Dy, Dx, CV_8U, Scalar(0));  //Es un tipo de dato de 4 bytes 32S
+//
+//
+//	//Se pone primero el eje Y y despues el eje XCV_64F
+//	for (int y=0; y<Dy; y++){
+//
+//		for (int x=0; x<Dx; x++){
+//			//cout << " y   x  : "  << y*Dx + x << "  " << x << endl;
+//			im.at<Tt>(y,x) = val[y*Dx + x];
+//		}
+//	}
+//	char imageName[]="imX.jpg";
+//	imageName[2] = 48 + indice;
+//	imwrite(imageName, im);
+//}

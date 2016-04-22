@@ -33,23 +33,24 @@
 #include <vector>
 #include <opencv2/opencv.hpp>
 #include <string>
-using namespace cv;
-
 #include "core/houghUtilities.h"
 
+using namespace cv;
+#define DEBUG
+#define N 9 //numbers of image, it defines the number of mask
+//pinta2 fuctions is for debug purpose
+void pinta2(ImageValChar& val,int Dy,int Dx, int indice);
 
-#define N 9 //numbers of image
+//void write_im(ImageValChar& val,int Dy,int Dx, int indice);
 
-void pinta2(ImageValChar& val,int Dy,int Dx, char imageName[]);
-// The library is enclosed in a namespace.
 
 int main(){
 
 	string nombreImagen;
-	//char imageName[] = "./im/im0X.fits";
-	//char imageName[] = "./imF03/im0X.fits";//11
-	//char imageName[] = "./imF1/im0X.fits";//10
-	char imageName[] = "./imF2/im0X.fits";//10
+	//char imageName[] = "./im/im0X.fits"; //   8  images set with a displacement below 15% of  solar disc radius
+	//char imageName[] = "./imF03/im0X.fits";//11 images set with a displacement around 0.3% of  solar disc radius
+	//char imageName[] = "./imF1/im0X.fits";//10  images set with a displacement up to 20% of  solar disc radius
+	char imageName[] = "./imF2/im0X.fits";//  10  images set with a displacement up to 40% of  solar disc radius
 	vector <ImageValInt> datacube;
 
    /* float Kernel[3][3] = {
@@ -64,70 +65,75 @@ int main(){
                               {1/16.0, 2/16.0, 1/16.0}
                              };
 
-	ImageValChar tmp (dimX*dimY);
-	float rand_parameter=1;
+	ImageValChar tmp (dimX*dimY); //to store masks
+
+	float rand_parameter=1;//It defines the size of the solar limbs coordinates subset
+
+
 	// read images from fits files into vector data cube 3D objects
-	for(unsigned int i = 0; i < N; i++) {
+	for(unsigned int i = 0; i < 9; i++) {
 
 		//imageName[8] = 48 + i;//for "./im/im0X.fits" set
 		imageName[10] = 48 + i;
 		nombreImagen = imageName;
-
-
 		datacube.push_back(readImageFit(nombreImagen));
 
 
-		cout<< "image name"<< nombreImagen<<endl;
 		//Calculate image gradient
+
 	ImageValInt ima=datacube[i];
+	ImageValInt ima2 (dimX*dimY);
+	cout<< "ffffffffff"<<endl;
+	ima2=rot90(ima,dimX,dimY);
+//valarray<double> ImFil=median_filter(ima,Kernel);
 
-	valarray<double> ImFil=median_filter(ima,Kernel);
-
-	cout << "max y Min"<< ImFil.max()<<"  "<<ImFil.min()<<endl;
-
-	ImageValChar valor = escalado8(ImFil);
-
-	 pinta2(valor,dimX,dimY,imageName);
-	// waitKey(0);
 	//ImageValDouble valorG = gradient(ImFil);
 	ImageValLong valorG = gradient(ima);
+	cout<< "ffffffffff2222"<<endl;
 	ImageValChar valorG8 = escalado8(valorG);
-//	pinta2(valorG8,dimX,dimY,nombreImagen);
-
+	cout<< "ffffffffff3333"<<endl;
 		int umbral = otsu_th(valorG8);
 
-		cout << "Umbral: " << umbral << endl;
-
+		cout<< "ffffffffff4444"<<endl;
 		binarizar(valorG8,umbral);
-		pinta2(valorG8,dimX,dimY,imageName);
-		ImageValInt ones = findones(valorG8);
-//waitKey(0);
-cout << "Size Ones: " << ones.size()/2 << endl;
-
+		ImageValInt ones = findones(valorG8); //find solar limbs coordinates
 		ImageValInt random_ones = randomizer(ones, rand_parameter);
+		//hough function with initial parameters
 
-		cout << "Size Random_Ones: " << random_ones.size()/2 << endl;
+		//coarse pass (pixel precision) and find the centers around the CCD centers in ROI (600*600) square
 
-		ImageValFloat matrix = hough(random_ones, 963.8, 1, 1020.68, 1021.75, 800);
+		ImageValFloat matrix = hough(random_ones, 963.8, 1, 1020.68, 1021.75, 600);
+
+#ifdef DEBUG
 		cout<< "image name"<< nombreImagen<<endl;
+		cout << "Otsu threhol : " << umbral << endl;
+		cout << "Size Ones: " << ones.size()/2 << endl;
+		cout << "Size Random_Ones: " << random_ones.size()/2 << endl;
 		cout<< "randon _parameter"<< rand_parameter<<endl;
+		//write_im(valorG8,dimX,dimY, i);
+		ImageValChar valor = escalado8(ima);
+		pinta2(valor,dimX,dimY,i);
+			waitKey(0);
+		valor = escalado8(ima2);
+		pinta2(valor,dimX,dimY,i+1);
+
 		for(int i=0; i < matrix.size(); i+=4){
 			if(i%4==0){
 				cout << endl;
 			}
 			cout << matrix[i] << "    " << matrix[i+1] << "    "  << matrix[i+2] << "    "  << matrix[i+3] << endl;
 		}
-
+		waitKey(0);
 
 	}
 	cout<< "finnn"<<endl;
-	waitKey(0);
 
+#endif
 
 	return 0;
 }
 
-void pinta2(ImageValChar& val,int Dy,int Dx, char imageName[]){
+void pinta2(ImageValChar& val,int Dy,int Dx, int indice){
 
 	Mat im(Dy, Dx, CV_8U, Scalar(0));  //Es un tipo de dato de 4 bytes 32S
 
@@ -140,13 +146,36 @@ void pinta2(ImageValChar& val,int Dy,int Dx, char imageName[]){
 			im.at<uchar>(y,x) = val[y*Dx + x];
 		}
 	}
-	//char imageName[] = "imX.jpg";
-	//imageName[2] = 48 + indice;
-	//imwrite(imageName, im);
+	char imageName[] = "imX.jpg";
+	imageName[2] = 48 + indice;
+	imwrite(imageName, im);
 
 	namedWindow(imageName, CV_WINDOW_NORMAL | CV_WINDOW_KEEPRATIO);
 	imshow(imageName, im);
 }
 
 
+/*
+void write_im(ImageValChar& val,int Dy,int Dx, int indice){
 
+	Mat im(Dy, Dx, CV_8U, Scalar(0));  //Es un tipo de dato de 4 bytes 32S
+
+
+	//Se pone primero el eje Y y despues el eje XCV_64F
+	for (int y=0; y<Dy; y++){
+
+		for (int x=0; x<Dx; x++){
+			//cout << " y   x  : "  << y*Dx + x << "  " << x << endl;
+			im.at<uchar>(y,x) = val[y*Dx + x];
+		}
+	}
+
+	char imageName[] = "imX.jpg";
+	imageName[2] = 48 + indice;
+
+	imwrite(imageName, im);
+
+}
+
+
+*/

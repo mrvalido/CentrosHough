@@ -1,6 +1,11 @@
 #include "houghUtilities.h"
 #include <opencv2/opencv.hpp>
 using namespace cv;
+
+
+/**
+ *
+ */
 /**
  *  Hough Fucntion caculate initial parameter to do hough transform. This preprocessing steps reduce the complexity of computation
  *  Calculamos el valor del radio de la circunferencia presente en la imagen asi como su posicion en la misma
@@ -19,16 +24,18 @@ ImageValFloat hough(ImageValInt& val, float radio, float paso, float yc, float x
 	 float Xmax=xc+despla_max;
 	 float Ymin=yc-despla_max;	// Ymin and Ymax are boundaries of coordinates around of initial center
 	 float Ymax=yc+despla_max;
-
+//cout << " Xmin  "<<Xmin<<" Xmax  "<<Xmax<<"  Ymin  "<<Ymin<<"  Ymax   "<<Ymax<<endl;
 	 float lmax=(Rmax-Rmin)/PASO_RADIO+1;
 	 int dimensionAcumulador=floor((Xmax-Xmin)/paso)+1;
 
 	 ImageValFloat matrix(lmax*4);
-
+int indice=0;
 	 int count = 0;
 	 for (float r=Rmin; r < Rmax; r+=PASO_RADIO){					// do_hough transform for each radio value belong to range
 
 		 ImageValInt votacion = do_hough(val, r*r, dimensionAcumulador, Xmin, Xmax, Ymin, Ymax, paso);
+
+		// write_im(votacion,dimensionAcumulador,dimensionAcumulador, indice);
 
 		 float *max = maximumValue(votacion, dimensionAcumulador);
 		 //cout << "Maximo: " << max[0] << "\t" << max[1] << "\t" << max[2] <<  endl;
@@ -38,6 +45,7 @@ ImageValFloat hough(ImageValInt& val, float radio, float paso, float yc, float x
 		 matrix[count+2] = (float)(max[1])*paso + Xmin;		//X
 		 matrix[count+3] = r;								//Radio
 		 count+=4;
+		 indice+=1;
 	 }
 	 return matrix;
  }
@@ -81,6 +89,7 @@ ImageValInt do_hough(ImageValInt& val, int r2, int dimensionAcumulador, float Xm
 			 }
 		 }
 	 }
+	 //cout<< "suma del acumulador"<<acu_ini.sum()<<endl;
 	 return acu_ini;
 }
 
