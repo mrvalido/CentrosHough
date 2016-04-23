@@ -429,6 +429,36 @@ ImageValInt rot90(ImageValInt& i_image,int rows, int cols){
    }
       return tmp;
 }
+
+//-----------------------------------------------------------
+ImageValInt flip(ImageValInt& im_in, int rows, int cols){
+	/*******************************************
+	 *
+	 *   Flip the image array vertically
+	 *   about the center horizontal axis.
+	 *
+	 *******************************************/
+	int size_val=im_in.size();
+	ImageValInt tmp(size_val);
+	int rd2 = rows/2;
+	for(int i=0; i<rd2; i++){
+		for(int j=0; j<cols; j++){
+			tmp[ind(rows-1-i,j)]= im_in[ind(i,j)];
+			//out_image[rows-1-i][j] = the_image[i][j];
+		}  /* ends loop over j */
+	}  /* ends loop over i */
+
+	for(int i=rd2; i<rows; i++){
+		for(int j=0; j<cols; j++){
+			tmp[ind(rows-1-i,j)]= im_in[ind(i,j)];
+			//out_image[rows-1-i][j] = the_image[i][j];
+		}  /* ends loop over j */
+	}  /* ends loop over i */
+
+
+	return tmp;
+}  /* ends flip_image */
+
 //--------------------------------------------------------------------------------------------------------------------
 
 //template <typename Tt>

@@ -300,55 +300,32 @@
 //
 //}
 //
-//flip(ImageValInt& the_image, ImageValInt Imaout_image,int rows, int cols){
-//
-//
-//     /*******************************************
-//     *
-//     *   Flip the image array horizontally
-//     *   about the center vertical axis.
-//     *
-//     *******************************************/
-//	ind( y, x ) ( y*dimX+x )
-//   if(type == 4){
-//      int cd2 = cols/2;
-//      for(int j=0; j<cd2; j++){
-//         for(int i=0; i<rows; i++){
-//        	 out_image[ind(i,cols-1-j)] = the_image[inr(i,j)];
-//        	 //out_image[i][cols-1-j] = the_image[i][j];
-//         }  /* ends loop over i */
-//      }  /* ends loop over j */
-//
-//      for(j=cd2; j<cols; j++){
-//         for(i=0; i<rows; i++){
-//            out_image[i][cols-1-j] = the_image[i][j];
-//         }  /* ends loop over i */
-//      }  /* ends loop over j */
-//   }  /* ends if type == 4 */
-//
-//
+//ImageValInt flip(ImageValInt& im_in, int rows, int cols){
 //     /*******************************************
 //     *
 //     *   Flip the image array vertically
 //     *   about the center horizontal axis.
 //     *
 //     *******************************************/
-//
+////size_val=im_in.size();
+//ImageValInt tmp(size_val);
 //   if(type == 5){
-//      rd2 = rows/2;
+//      int rd2 = rows/2;
 //      for(i=0; i<rd2; i++){
 //         for(j=0; j<cols; j++){
+			//	tmp[ind(rows-1-i,j)]= im_in[ind(i,j)];
 //            out_image[rows-1-i][j] = the_image[i][j];
 //         }  /* ends loop over j */
 //      }  /* ends loop over i */
 //
 //      for(i=rd2; i<rows; i++){
 //         for(j=0; j<cols; j++){
+//				tmp[ind(rows-1-i,j)]= im_in[ind(i,j)];
 //            out_image[rows-1-i][j] = the_image[i][j];
 //         }  /* ends loop over j */
 //      }  /* ends loop over i */
 //   }  /* ends if type == 5 */
 //
-//
+//return tmp;
 //}  /* ends flip_image */
 //*/

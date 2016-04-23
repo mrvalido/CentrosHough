@@ -84,7 +84,7 @@ int main(){
 	ImageValInt ima=datacube[i];
 	ImageValInt ima2 (dimX*dimY);
 	cout<< "ffffffffff"<<endl;
-	ima2=rot90(ima,dimX,dimY);
+	//ima2=rot90(ima,dimX,dimY);
 //valarray<double> ImFil=median_filter(ima,Kernel);
 
 	//ImageValDouble valorG = gradient(ImFil);
@@ -111,11 +111,11 @@ int main(){
 		cout << "Size Random_Ones: " << random_ones.size()/2 << endl;
 		cout<< "randon _parameter"<< rand_parameter<<endl;
 		//write_im(valorG8,dimX,dimY, i);
-		ImageValChar valor = escalado8(ima);
-		pinta2(valor,dimX,dimY,i);
-			waitKey(0);
-		valor = escalado8(ima2);
-		pinta2(valor,dimX,dimY,i+1);
+//		ImageValChar valor = escalado8(ima);
+//		pinta2(valor,dimX,dimY,i);
+//			waitKey(0);
+//		valor = escalado8(ima2);
+//		pinta2(valor,dimX,dimY,i+1);
 
 		for(int i=0; i < matrix.size(); i+=4){
 			if(i%4==0){
@@ -123,7 +123,7 @@ int main(){
 			}
 			cout << matrix[i] << "    " << matrix[i+1] << "    "  << matrix[i+2] << "    "  << matrix[i+3] << endl;
 		}
-		waitKey(0);
+		//waitKey(0);
 
 	}
 	cout<< "finnn"<<endl;
