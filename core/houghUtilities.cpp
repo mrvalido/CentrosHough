@@ -26,20 +26,13 @@ ImageValInt readImageFit(string nombreImagen){
 
 	int size_val = contents.size();
 	ImageValInt im(size_val);
-	cout << image << std::endl;
+
 	for(int i = 0; i < size_val; i++){
 		im[i] = contents[i];
 	}
 	return im;
 }
 
-/*int filterGaussian(valarray<unsigned char> im, int x, int y, int dimX){
-	return (   (im[(y)*dimX + (x)]) + 2*(im[(y)*dimX + (x)]) +   (im[(y)*dimX + (x)]) +
-			 2*(im[(y)*dimX + (x)]) + 4*(im[(y)*dimX + (x)]) + 2*(im[(y)*dimX + (x)]) +
-			   (im[(y)*dimX + (x)]) + 2*(im[(y)*dimX + (x)]) +   (im[(y)*dimX + (x)])
-		   )/16;
-}
-}*/
 
 //// Computes the x component of the gradient vector
 //// at a given point in a image.
@@ -65,16 +58,6 @@ double yGradient(const valarray<double>& image, int x, int y)
 }
 
 
-      // define the kernel
-
-//      // define the kernel
-//            float Kernel[3][3] = {
-//                                  {1/9.0, 1/9.0, 1/9.0},
-//                                  {1/9.0, 1/9.0, 1/9.0},
-//                                  {1/9.0, 1/9.0, 1/9.0}
-//                                 };
-//
-
 
 valarray<double> gradient(const valarray<double>& src ){
 	//
@@ -87,9 +70,6 @@ valarray<double> gradient(const valarray<double>& src ){
 			gy = yGradient(src, x, y);
 			gx = xGradient(src, x, y);
 			sum= (gx*gx+gy*gy);
-			//sum = abs(gx) + abs(gy);
-			//			sum = sum > 255 ? 255:sum;
-			//			sum = sum < 0 ? 0 : sum;
 			tmp[ind(y,x)] = sum;
 		}
 	}
@@ -109,33 +89,29 @@ valarray<double> median_filter(const ImageValInt& val, float Kernel[3][3]){
 			 //
 			 for(int k = -1; k <= 1;k++) {
 				 for(int j = -1; j <=1; j++) {
-
-					// cout<< "k= "<<k<<" j="<<j<<"  y-j="<<y-j<<" x-k="<<x-k<<endl;
 					 sum = sum + Kernel[j+1][k+1]*(float)val[ind(int(y - j), int(x - k))];
-
-//					cout <<"Kernel= "<<Kernel[j+1][k+1] <<"   ind="<<ind(int(y - j), int(x - k))<<endl;
-
 				 }
 			 }
-//waitKey(1000);
 			 tmp[ind(y,x)] = sum;
 		 }
 	 }
 	 return tmp;
 }
-
+/**
+ * Sobel Kernel
+ */
 long Sobel(int val1,int val2,int val3,int val4,int val5,int val6){
 	return (long)(val1 + 2*val2 + val3 -val4 - 2*val5 - val6);
 }
 
-/*
+
+/**
  * Calculate gradient of image using sobel kernel
  *
  * @param im_im 	32 bits grayscale Input image
  *
  * @return image	32 bits grayscale Gradient image
  */
-
 
 ImageValLong gradient(const ImageValInt& im_in){
 
@@ -166,19 +142,18 @@ ImageValLong gradient(const ImageValInt& im_in){
 
 			gx = Sobel(x_y_1, x_1, x_y_t_1, x_y_t_2, x_2, x_y_2);
 			gy = Sobel(x_y_1, y_1, x_y_t_2, x_y_t_1, y_2, x_y_2);
-			temp[ind( y, x )] = (unsigned long)(gx*gx + gy*gy);//gradient aproximate
-			//temp[ind( y, x )] = sqrt((gx*gx + gy*gy));//gradient aproximate
-			//temp[ind( y, x )] = (unsigned long)(abs(gx) + abs(gy));//gradient aproximate
+			temp[ind( y, x )] = (unsigned long)(gx*gx + gy*gy);//gradient approximate
+
 		}
 	}
 
 	return temp;
 }
 /**
- * Recibimos una imagen en 8 bits y le aplicamos la dilatacion de bordes
+ * this function scales a double input image to 255 levels image
  *
- * @param image		Imagen a la cual aplicaremos el Dilate
- * @return image 	Imagen una vez aplicado el filtro
+ * @param image		double Image
+ * @return image 	255 grey level Image
  */
 ImageValChar escalado8(const ImageValDouble& val){
 	int size_val = val.size();
@@ -189,8 +164,6 @@ ImageValChar escalado8(const ImageValDouble& val){
 	tmp=tmp-min;
 	mx=tmp.max();
 	tmp=tmp/mx;
-	//cout << "Maximo: " << mx << "          Minimo: " << min << endl;
-
 	for(int i = 0; i < size_val; i++){
 		temp[i] = (unsigned char) ( tmp[i] * 255.0);
 	}
@@ -198,12 +171,11 @@ ImageValChar escalado8(const ImageValDouble& val){
 	return temp;
 }
 /**
- * Recibimos una imagen en 8 bits y le aplicamos la dilatacion de bordes
+ * this function scales a long input image to 255 levels image
  *
- * @param image		Imagen a la cual aplicaremos el Dilate
- * @return image 	Imagen una vez aplicado el filtro
+ * @param image		long  Image
+ * @return image 	255 grey level Image
  */
-
 ImageValChar escalado8(const ImageValLong& val){
 	int size_val = val.size();
 	ImageValChar temp(size_val);
@@ -217,12 +189,11 @@ ImageValChar escalado8(const ImageValLong& val){
 	return temp;
 }
 /**
- * Recibimos una imagen en 8 bits y le aplicamos la dilatacion de bordes
+ * this function scales a unsigned int input image to 255 levels image
  *
- * @param image		Imagen a la cual aplicaremos el Dilate
- * @return image 	Imagen una vez aplicado el filtro
+ * @param image		unsigned int Image
+ * @return image 	255 grey level Image
  */
-
 ImageValChar escalado8(const ImageValInt& val){
 	int size_val = val.size();
 	ImageValChar temp(size_val);
@@ -236,7 +207,7 @@ ImageValChar escalado8(const ImageValInt& val){
 	return temp;
 }
 /**
- * Caculate eigh bit image histogram
+ * Calculate eight bit image histogram
  *
  * @param val		input image
  * @return hist 	histogram of input image
@@ -319,7 +290,7 @@ int otsu_th(const ImageValChar& val){
 }
 
 /**
- *  this fuction create a two level image Dada una imagen de entrada la binarizamos en blanco y negro
+ *  this function create a two level image
  *
  *  @param val 			8 bit gray level input /output
  *  @param threshold  	input threshold
@@ -341,10 +312,10 @@ void binarizar (ImageValChar& val, int threshold){
 //--------------------------------------------------------------------------------------------------------------------
 
 /**
- * Recibimos una imagen en 8 bits y le aplicamos la dilatacion de bordes
+ * this function find in binarized image the coordinates of solar limb
  *
- * @param image		Imagen a la cual aplicaremos el Dilate
- * @return image 	Imagen una vez aplicado el filtro
+ * @param val		binary input Image
+ * @return coordinadas 	y and x Coordinates of solar limb
  */
 
 ImageValInt findones(const ImageValChar& val){
@@ -374,17 +345,18 @@ ImageValInt findones(const ImageValChar& val){
 }
 
 /**
- * Recibimos una imagen en 8 bits y le aplicamos la dilatacion de bordes
+ * this function get a random sub set from solar limb (SL)coordinates
  *
- * @param image		Imagen a la cual aplicaremos el Dilate
- * @return image 	Imagen una vez aplicado el filtro
+ * @param val		total solar limb coordinates
+ * @param random	% of total points
+ * @return image 	random subset SL coordinates
  */
 
 ImageValInt randomizer(ImageValInt& val, float random){
 
 	int size_val = val.size();
 	int n = size_val*random;           // number of elements to deal
-	srand(SEMILLA);//srand(time(0));  					// initialize seed "randomly"
+	srand(SEMILLA);//srand(time(0));   // initialize with SEMILLA parameter
 
 	int tempX, tempY;
 	//--- Shuffle elements by randomly exchanging each with one other.
@@ -404,6 +376,8 @@ ImageValInt randomizer(ImageValInt& val, float random){
 }
 
 
+
+// Not used functions
 
 ImageValInt rot90(ImageValInt& i_image,int rows, int cols){
 
@@ -460,22 +434,3 @@ ImageValInt flip(ImageValInt& im_in, int rows, int cols){
 }  /* ends flip_image */
 
 //--------------------------------------------------------------------------------------------------------------------
-
-//template <typename Tt>
-//void write_im(Tt& val,int Dy,int Dx, int indice){
-//
-//	Mat im(Dy, Dx, CV_8U, Scalar(0));  //Es un tipo de dato de 4 bytes 32S
-//
-//
-//	//Se pone primero el eje Y y despues el eje XCV_64F
-//	for (int y=0; y<Dy; y++){
-//
-//		for (int x=0; x<Dx; x++){
-//			//cout << " y   x  : "  << y*Dx + x << "  " << x << endl;
-//			im.at<Tt>(y,x) = val[y*Dx + x];
-//		}
-//	}
-//	char imageName[]="imX.jpg";
-//	imageName[2] = 48 + indice;
-//	imwrite(imageName, im);
-//}

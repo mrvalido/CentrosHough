@@ -58,68 +58,51 @@ ImageValFloat hough(ImageValInt& val, float radio, float paso, float yc, float x
  *  @return Hough space
  */
 ImageValInt do_hough(ImageValInt& val, int r2, int dimensionAcumulador, float Xmin, float Xmax, float Ymin, float Ymax, float paso){
-	 int size_val = val.size();
-	 ImageValInt acu_ini(dimensionAcumulador*dimensionAcumulador);
+	int size_val = val.size();
+	ImageValInt acu_ini(dimensionAcumulador*dimensionAcumulador);
 
-	 int y, x;
-	 float det,xc,yc;
-	 float det1,xc1,yc1;
-	 float b;
-	 int bb, aa;
-	 for(int k=0; k < size_val/2; k++){
-		 //we get y and x coordinates from input val
-		 y = val[2*k];
-		 x = val[2*k+1];
+	int y, x;
+	float det,xc,yc;
+	float det1,xc1,yc1;
+	float b;
+	int bb, aa;
+	for(int k=0; k < size_val/2; k++){
+		//we get y and x coordinates from input val
+		y = val[2*k];
+		x = val[2*k+1];
 
-//do votation in Hough space
-		 for(float a = Xmin; a < Xmax; a+=paso){		// a es la coordenada del centro X xc
-			 det=r2-(x-a)*(x-a);//loop over x
-			 det1=r2-(y-a)*(y-a);//loop over y
+		//do votation in Hough space
+		for(float a = Xmin; a < Xmax; a+=paso){		// a es la coordenada del centro X xc
+			det=r2-(x-a)*(x-a);//loop over x
+			det1=r2-(y-a)*(y-a);//loop over y
 
-			 //yc estimation
-			 if (det>0){
-				 b=((float)y-sqrt(det));//yc
-				 if (b>Ymin && b<Ymax){
-					 aa=(int)round((a-Xmin)/paso);//xc
-					 bb=(int)round((b-Ymin)/paso);//yc
-					 if (bb>0 && aa>0){
-						 acu_ini[bb*dimensionAcumulador + aa] = acu_ini[bb*dimensionAcumulador + aa] + 1;
-					 }
-				 }
-			 }
-			 //xc1 estimation
-			 if (det1>0){
-				 b=((float)x-sqrt(det1));//xc1
-				 if (b>Xmin && b<Xmax){
-					 aa=(int)round((a-Ymin)/paso);//yc
-					 bb=(int)round((b-Xmin)/paso);//xc
-					 if (bb>0 && aa>0){
-						 acu_ini[aa*dimensionAcumulador + bb] = acu_ini[aa*dimensionAcumulador + bb] + 1;
-					 }
-				 }
-			 }
-		 		 }
+			//yc estimation from xc loop
+			if (det>0){
+				b=((float)y-sqrt(det));//yc
+				if (b>Ymin && b<Ymax){
+					aa=(int)round((a-Xmin)/paso);//xc
+					bb=(int)round((b-Ymin)/paso);//yc
+					if (bb>0 && aa>0){
+						acu_ini[bb*dimensionAcumulador + aa] = acu_ini[bb*dimensionAcumulador + aa] + 1;
+					}
+				}
+			}
+			//xc1 estimation from yc1 loop
+			if (det1>0){
+				b=((float)x-sqrt(det1));//xc1
+				if (b>Xmin && b<Xmax){
+					aa=(int)round((a-Ymin)/paso);//yc
+					bb=(int)round((b-Xmin)/paso);//xc
+					if (bb>0 && aa>0){
+						acu_ini[aa*dimensionAcumulador + bb] = acu_ini[aa*dimensionAcumulador + bb] + 1;
+					}
+				}
+			}
+		}
 
-//************************************************************
-//		 for(float a = Xmin; a < Xmax; a+=paso){		// a es la coordenada del centro X xc
-//			 det=r2-(x-a)*(x-a);
-//
-//			 if (det>0){
-//				b=((float)y-sqrt(det));
-//				if (b>Ymin && b<Ymax){
-//					aa=(int)round((a-Xmin)/paso);
-//					bb=(int)round((b-Ymin)/paso);
-//
-//
-//					if (bb>0 && aa>0){
-//						acu_ini[bb*dimensionAcumulador + aa] = acu_ini[bb*dimensionAcumulador + aa] + 1;
-//					}
-//				}
-//			 }
-//		 }
-	 }
-	 //cout<< "suma del acumulador"<<acu_ini.sum()<<endl;
-	 return acu_ini;
+
+	}
+	return acu_ini;
 }
 
 
@@ -167,9 +150,9 @@ float* maximumValue(ImageValInt& val, int dimensionAcumulador)
 }
 
 /**
- *  Kerner function find find maximun value in hough space
- *	@param val		hough space (dimentions is dimensionAcumuladorxdimensionAcumulador)
- *  @param dimensionAcumulador 	    it is side dimetion of hough space
+ *  Kerner function find find maximum value in hough space
+ *	@param val		hough space (dimensions is dimensionAcumuladorxdimensionAcumulador)
+ *  @param dimensionAcumulador 	    it is side dimension of hough space
  *
  *  @return  a pointer to vector (max) of 3 components y and x coordinates and value of maximum
  */
