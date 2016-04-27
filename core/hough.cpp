@@ -8,10 +8,10 @@ using namespace cv;
  */
 /**
  *  Hough Fucntion caculate initial parameter to do hough transform. This preprocessing steps reduce the complexity of computation
- *  Calculamos el valor del radio de la circunferencia presente en la imagen asi como su posicion en la misma
- *	@param val		Coordinates of Solar limb
- *  @param radio 	initial Radio
- *  @param paso 	incremental step to coordinates search Imagen binarizada con el borde calculado, a calcular su radio
+ *  hough Circle transform estimates the center of the circle
+ *	@param val		Coordinates of Solar limb (is a random subset of the ccordinates of solar limb)
+ *  @param radio 	initial Radius (the algorithm loops around of this initial radius, about ANCHO paremater pixels)
+ *  @param paso 	incremental step to increase the loop coordinates (x and y)
  *  @param yc  	     Initial yc center coordinate
  *	@param xc  	     Initial xc center coordinate
  *  @return Matrix  a set of centers coordinates, size of matrix depending of search range of radio
@@ -19,34 +19,30 @@ using namespace cv;
 ImageValFloat hough(ImageValInt& val, float radio, float paso, float yc, float xc, int despla_max){
 	 float Rmin=radio-ANCHO/2;
 	 float Rmax=radio+ANCHO/2;
-
+// defining searching ROI (Region of interest)
 	 float Xmin=xc-despla_max; 	// Xmin and Xmax are boundaries of coordinates around of initial center
 	 float Xmax=xc+despla_max;
 	 float Ymin=yc-despla_max;	// Ymin and Ymax are boundaries of coordinates around of initial center
 	 float Ymax=yc+despla_max;
 //cout << " Xmin  "<<Xmin<<" Xmax  "<<Xmax<<"  Ymin  "<<Ymin<<"  Ymax   "<<Ymax<<endl;
-	 float lmax=(Rmax-Rmin)/PASO_RADIO+1;
+	 //lmax number is   loop times radii
+	 float lmax=(Rmax-Rmin)/PASO_RADIO;
 	 int dimensionAcumulador=floor((Xmax-Xmin)/paso)+1;
-
 	 ImageValFloat matrix(lmax*4);
-int indice=0;
 	 int count = 0;
-	 for (float r=Rmin; r < Rmax; r+=PASO_RADIO){					// do_hough transform for each radio value belong to range
+	 for (float r=Rmin; r < Rmax; r+=PASO_RADIO){					// do_hough transform for each radius value belong to range
 
 		 ImageValInt votacion = do_hough(val, r*r, dimensionAcumulador, Xmin, Xmax, Ymin, Ymax, paso);
-
-		// write_im(votacion,dimensionAcumulador,dimensionAcumulador, indice);
-
+		 //find the most voted center coordinates for a given radius
 		 float *max = maximumValue(votacion, dimensionAcumulador);
-		 //cout << "Maximo: " << max[0] << "\t" << max[1] << "\t" << max[2] <<  endl;
-
-		 matrix[count] = max[2];							//Valor
-		 matrix[count+1] = (float)(max[0])*paso + Ymin;		//Y
-		 matrix[count+2] = (float)(max[1])*paso + Xmin;		//X
-		 matrix[count+3] = r;								//Radio
+		 //store and scale the circles parameters
+		 matrix[count] = max[2];							//Votes
+		 matrix[count+1] = (float)(max[0])*paso + Ymin;		//Yc
+		 matrix[count+2] = (float)(max[1])*paso + Xmin;		//Xc
+		 matrix[count+3] = r;								//Rc
 		 count+=4;
-		 indice+=1;
 	 }
+
 	 return matrix;
  }
 
