@@ -49,9 +49,9 @@ int main(){
 	string nombreImagen;
 	//four sets of 9 each displacement image
 	//char imageName[] = "./im/im0X.fits"; //   8  images set with a displacement below 15% of  solar disc radius
-	//char imageName[] = "./imF03/im0X.fits";//11 images set with a displacement around 0.3% of  solar disc radius
+	char imageName[] = "./imF03/im0X.fits";//11 images set with a displacement around 0.3% of  solar disc radius
 	//char imageName[] = "./imF1/im0X.fits";//10  images set with a displacement up to 20% of  solar disc radius
-	char imageName[] = "./imF2/im0X.fits";//  10  images set with a displacement up to 40% of  solar disc radius
+	//char imageName[] = "./imF2/im0X.fits";//  10  images set with a displacement up to 40% of  solar disc radius
 	vector <ImageValInt> datacube;
 
    /* float Kernel[3][3] = {
@@ -68,14 +68,14 @@ int main(){
 
 	ImageValChar tmp (dimX*dimY); //to store masks
 
-	float rand_parameter=1;//It defines the size of the solar limbs coordinates subset
+	float rand_parameter=0.5;//It defines the size of the solar limbs coordinates subset
 
 
 	// read images from fits files into vector data cube 3D objects
 	for(unsigned int i = 0; i < 9; i++) {
 
 		//imageName[8] = 48 + i;//for "./im/im0X.fits" set
-		imageName[10] = 48 + i;
+		imageName[11] = 48 + i;
 		nombreImagen = imageName;
 		datacube.push_back(readImageFit(nombreImagen));
 
@@ -125,10 +125,10 @@ int main(){
 				largest=matrix[i];
 				indice=i;
 			}
-			cout << matrix[i] << "    " << matrix[i+1] << "    "  << matrix[i+2] << "    "  << matrix[i+3] << endl;
+			//cout << matrix[i] << "    " << matrix[i+1] << "    "  << matrix[i+2] << "    "  << matrix[i+3] << endl;
 		}
 		//waitKey(0);
-		//cout << matrix[indice] << "    " << matrix[indice+1] << "    "  << matrix[indice+2] << "    "  << matrix[indice+3] << endl;
+		cout << matrix[indice] << "    " << matrix[indice+1] << "    "  << matrix[indice+2] << "    "  << matrix[indice+3] << endl;
 
 	}
 	cout<< "finnn"<<endl;
@@ -159,28 +159,3 @@ void pinta2(ImageValChar& val,int Dy,int Dx, int indice){
 	imshow(imageName, im);
 }
 
-
-/*
-void write_im(ImageValChar& val,int Dy,int Dx, int indice){
-
-	Mat im(Dy, Dx, CV_8U, Scalar(0));  //Es un tipo de dato de 4 bytes 32S
-
-
-	//Se pone primero el eje Y y despues el eje XCV_64F
-	for (int y=0; y<Dy; y++){
-
-		for (int x=0; x<Dx; x++){
-			//cout << " y   x  : "  << y*Dx + x << "  " << x << endl;
-			im.at<uchar>(y,x) = val[y*Dx + x];
-		}
-	}
-
-	char imageName[] = "imX.jpg";
-	imageName[2] = 48 + indice;
-
-	imwrite(imageName, im);
-
-}
-
-
- */
